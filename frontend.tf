@@ -48,6 +48,23 @@ resource "aws_s3_bucket_policy" "frontend" {
   })
 }
 
+# --- CloudFront Function (SPA routing) ---
+
+resource "aws_cloudfront_function" "spa_routing" {
+  name    = "${var.project_name}-spa-routing"
+  runtime = "cloudfront-js-2.0"
+  publish = true
+  code    = <<-EOF
+    function handler(event) {
+      var request = event.request;
+      var uri = request.uri;
+      if (uri.includes('.')) { return request; }
+      request.uri = '/index.html';
+      return request;
+    }
+  EOF
+}
+
 # --- CloudFront Distribution ---
 
 resource "aws_cloudfront_distribution" "main" {
@@ -87,6 +104,11 @@ resource "aws_cloudfront_distribution" "main" {
 
     # Managed cache policy: CachingOptimized
     cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.spa_routing.arn
+    }
   }
 
   # /api/* behavior: forward to ALB (no caching)
@@ -103,21 +125,6 @@ resource "aws_cloudfront_distribution" "main" {
 
     # Managed origin request policy: AllViewer
     origin_request_policy_id = "216adef6-5c7f-47e4-b989-5492eafa07d3"
-  }
-
-  # SPA routing: return index.html for 403/404 (S3 returns 403 for missing keys)
-  custom_error_response {
-    error_code            = 403
-    response_code         = 200
-    response_page_path    = "/index.html"
-    error_caching_min_ttl = 0
-  }
-
-  custom_error_response {
-    error_code            = 404
-    response_code         = 200
-    response_page_path    = "/index.html"
-    error_caching_min_ttl = 0
   }
 
   restrictions {
