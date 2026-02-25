@@ -37,3 +37,13 @@ output "ecs_service_name" {
   description = "ECS service name"
   value       = aws_ecs_service.backend.name
 }
+
+output "github_actions_backend_role_arn" {
+  description = "IAM role ARN for ccc-backend GitHub Actions deploy"
+  value       = module.github_actions_oidc.backend_role_arn
+}
+
+output "github_actions_frontend_role_arn" {
+  description = "IAM role ARN for ccc-frontend GitHub Actions deploy"
+  value       = module.github_actions_oidc.frontend_role_arn
+}
