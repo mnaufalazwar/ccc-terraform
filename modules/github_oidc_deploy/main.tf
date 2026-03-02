@@ -27,7 +27,10 @@ data "aws_iam_policy_document" "backend_assume" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_owner}/${var.backend_repo}:ref:refs/heads/${var.backend_branch_pattern}"]
+      values   = [
+        "repo:${var.github_owner}/${var.backend_repo}:ref:refs/heads/${var.backend_branch_pattern}",
+        "repo:${var.github_owner}/${var.backend_repo}:environment:production"
+        ]
     }
   }
 }
@@ -66,7 +69,10 @@ data "aws_iam_policy_document" "frontend_assume" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_owner}/${var.frontend_repo}:ref:refs/heads/${var.frontend_branch_pattern}"]
+      values = [
+        "repo:${var.github_owner}/${var.frontend_repo}:ref:refs/heads/${var.frontend_branch_pattern}",
+        "repo:${var.github_owner}/${var.frontend_repo}:environment:production"
+        ]
     }
   }
 }
